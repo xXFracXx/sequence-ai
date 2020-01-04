@@ -22,8 +22,8 @@ HAND_SPACE = 650
 CARDS_TO_DEAL = 5
 INIT_CHIP_MATRIX = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-INIT_CARD_MATRIX = [["MC", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "MC"], ["C6", "C5", "C4", "C3", "C2", "HA", "HK", "HQ", "H1", "S1"], ["C7", "SA", "D2", "D3", "D4", "D5", "D6", "D7", "H9", "SQ"], ["C8", "SK", "C6", "C5", "C4", "C3", "C2", "D8", "H8", "SK"], ["C9", "SQ", "C7", "H6", "H5", "H4", "HA", "D9", "H7", "SA"], [
-    "C1", "S1", "C8", "H7", "H2", "H3", "HK", "D1", "H6", "D2"], ["CQ", "S9", "C9", "H8", "H9", "H1", "HQ", "DQ", "H5", "D3"], ["CK", "S8", "C1", "CQ", "CK", "CA", "DA", "DK", "H4", "D4"], ["CA", "S7", "S6", "S5", "S4", "S3", "S2", "H2", "H3", "D5"], ["MC", "DA", "DK", "DQ", "D1", "D9", "D8", "D7", "D6", "MC"]]
+INIT_CARD_MATRIX = [["1MC", "1S2", "1S3", "1S4", "1S5", "1S6", "1S7", "1S8", "1S9", "2MC"], ["1C6", "1C5", "1C4", "1C3", "1C2", "1HA", "1HK", "1HQ", "1H1", "1S1"], ["1C7", "1SA", "1D2", "1D3", "1D4", "1D5", "1D6", "1D7", "1H9", "1SQ"], ["1C8", "1SK", "2C6", "2C5", "2C4", "2C3", "2C2", "1D8", "1H8", "2SK"], ["1C9", "2SQ", "2C7", "1H6", "1H5", "1H4", "2HA", "1D9", "1H7", "2SA"], [
+    "1C1", "2S1", "2C8", "2H7", "1H2", "1H3", "2HK", "1D1", "2H6", "2D2"], ["1CQ", "2S9", "2C9", "2H8", "2H9", "2H1", "2HQ", "1DQ", "2H5", "2D3"], ["1CK", "2S8", "2C1", "2CQ", "2CK", "1CA", "1DA", "1DK", "2H4", "2D4"], ["2CA", "2S7", "2S6", "2S5", "2S4", "2S3", "2S2", "2H2", "2H3", "2D5"], ["3MC", "2DA", "2DK", "2DQ", "2D1", "2D9", "2D8", "2D7", "2D6", "4MC"]]
 
 
 class Board:
@@ -46,8 +46,9 @@ class Board:
         for i in range(BOARD_SIZE_X):
             row = []
             for j in range(BOARD_SIZE_Y):
+                temp_str = INIT_CARD_MATRIX[i][j]
                 row.append(
-                    Card(INIT_CHIP_MATRIX[i][j], INIT_CARD_MATRIX[i][j]))
+                    Card(INIT_CHIP_MATRIX[i][j], int(temp_str[0]), temp_str[1:]))
             col.append(row)
         self.card_matrix = col
 
@@ -186,19 +187,22 @@ class Board:
                 card_selected_n = 3
             elif key == pygame.K_5:
                 card_selected_n = 4
+            else:
+                return
 
             # card_selected = self.p1_cards[card_selected_n]
             player_cards = getattr(
                 self, "p" + str(self.current_turn) + "_cards")
             card_selected = player_cards[card_selected_n]
-
-            self.card_selected_n = card_selected_n
             self.card_selected = card_selected
+            self.card_selected_n = card_selected_n
 
             open_count = 0
+            valid_count = 0
             for x, row in enumerate(self.card_matrix):
                 for y, col in enumerate(row):
                     if col.cType == card_selected and col.chip == 0:
+                        valid_count = col.count
                         open_count += 1
 
             if open_count == 2:
@@ -206,12 +210,13 @@ class Board:
                 return
 
             if open_count == 0:
-                self.turn_state = 3
+                # self.turn_state = 3
+                self.nextTurn(True)
                 return
 
             if open_count == 1:
-                self.playCard(1)
-                self.nextTurn()
+                self.playCard(card_selected, valid_count)
+                self.nextTurn(False)
                 self.turn_state = 1
                 return
             return
@@ -223,17 +228,19 @@ class Board:
                 opt_selected_n = 1
             elif key == pygame.K_2:
                 opt_selected_n = 2
+            else:
+                return
 
-            self.playCard(opt_selected_n)
-            self.nextTurn()
+            self.playCard(self.card_selected, opt_selected_n)
+            self.nextTurn(False)
             self.turn_state = 1
             return
 
         # dead card turn
-        if self.turn_state == 3:
-            pass
+        # if self.turn_state == 3:
+        #     pass
 
-    def nextTurn(self):
+    def nextTurn(self, dead):
         if self.current_turn == 1:
             played_card = self.p1_cards.pop(self.card_selected_n)
             new_card = self.card_deck.pop(
@@ -241,7 +248,8 @@ class Board:
             self.p1_cards.append(new_card)
             self.card_deck.insert(random.randrange(
                 len(self.card_deck) + 1), played_card)
-            self.current_turn = 2
+            if not dead:
+                self.current_turn = 2
         elif self.current_turn == 2:
             played_card = self.p2_cards.pop(self.card_selected_n)
             new_card = self.card_deck.pop(
@@ -249,13 +257,11 @@ class Board:
             self.p2_cards.append(new_card)
             self.card_deck.insert(random.randrange(
                 len(self.card_deck) + 1), played_card)
-            self.current_turn = 1
+            if not dead:
+                self.current_turn = 1
 
-    def playCard(self, matrix_card_inst):
-        opt_count = 1
+    def playCard(self, card_selected, count):
         for card_y, card_r in enumerate(self.card_matrix):
             for card_x, card_c in enumerate(card_r):
-                if card_c.cType == self.card_selected:
-                    if opt_count == matrix_card_inst:
-                        self.card_matrix[card_y][card_x].chip = self.current_turn
-                        opt_count += 1
+                if card_c.cType == card_selected and card_c.count == count:
+                    self.card_matrix[card_y][card_x].chip = self.current_turn

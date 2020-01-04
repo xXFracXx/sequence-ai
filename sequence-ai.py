@@ -34,6 +34,15 @@ class Board:
         # self.mc = transform.scale(image.load(
         #     os.path.join("imgs", "cards", "cardMiscC.png")), (CARD_WIDTH, CARD_HEIGHT))
 
+        # load chips
+        self.rc = transform.scale(image.load(
+            os.path.join("imgs", "red", "chip.png")), (CARD_WIDTH, CARD_HEIGHT))
+        self.bc = transform.scale(image.load(
+            os.path.join("imgs", "blue", "chip.png")), (CARD_WIDTH, CARD_HEIGHT))
+        self.gc = transform.scale(image.load(
+            os.path.join("imgs", "green", "chip.png")), (CARD_WIDTH, CARD_HEIGHT))
+
+        # load cards
         for c in self.card_codes:
             # card type logic
             card_type = ""
@@ -57,14 +66,28 @@ class Board:
                 os.path.join("imgs", "cards", card_name)), (CARD_WIDTH, CARD_HEIGHT))
 
             setattr(self, c.lower(), img)
-            # self[c.lower()] = img
 
     def draw(self, win):
-        for y, r in enumerate(self.card_matrix):
-            for x, c in enumerate(r):
-                win_x = CARD_SPACE + (x * (CARD_WIDTH + CARD_SPACE))
-                win_y = CARD_SPACE + (y * (CARD_HEIGHT + CARD_SPACE))
-                win.blit(getattr(self, c.lower()), (win_x, win_y))
+        # draw cards
+        for card_y, card_r in enumerate(self.card_matrix):
+            for card_x, card_c in enumerate(card_r):
+                win_x = CARD_SPACE + (card_x * (CARD_WIDTH + CARD_SPACE))
+                win_y = CARD_SPACE + (card_y * (CARD_HEIGHT + CARD_SPACE))
+                win.blit(getattr(self, card_c.lower()), (win_x, win_y))
+
+        # draw chip
+        for chip_y, chip_r in enumerate(self.chip_matrix):
+            for chip_x, chip_c in enumerate(chip_r):
+                if not chip_c == 0:
+                    win_x = CARD_SPACE + (chip_x * (CARD_WIDTH + CARD_SPACE))
+                    win_y = CARD_SPACE + (chip_y * (CARD_HEIGHT + CARD_SPACE))
+                    if chip_c == 1:
+                        chip_img = self.rc
+                    elif chip_c == 2:
+                        chip_img = self.bc
+                    elif chip_c == 3:
+                        chip_img = self.gc
+                    win.blit(chip_img, (win_x, win_y))
 
 
 def draw_window(win, board):

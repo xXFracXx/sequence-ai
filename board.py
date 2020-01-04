@@ -24,6 +24,18 @@ INIT_CHIP_MATRIX = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 INIT_CARD_MATRIX = [["1MC", "1S2", "1S3", "1S4", "1S5", "1S6", "1S7", "1S8", "1S9", "2MC"], ["1C6", "1C5", "1C4", "1C3", "1C2", "1HA", "1HK", "1HQ", "1H1", "1S1"], ["1C7", "1SA", "1D2", "1D3", "1D4", "1D5", "1D6", "1D7", "1H9", "1SQ"], ["1C8", "1SK", "2C6", "2C5", "2C4", "2C3", "2C2", "1D8", "1H8", "2SK"], ["1C9", "2SQ", "2C7", "1H6", "1H5", "1H4", "2HA", "1D9", "1H7", "2SA"], [
     "1C1", "2S1", "2C8", "2H7", "1H2", "1H3", "2HK", "1D1", "2H6", "2D2"], ["1CQ", "2S9", "2C9", "2H8", "2H9", "2H1", "2HQ", "1DQ", "2H5", "2D3"], ["1CK", "2S8", "2C1", "2CQ", "2CK", "1CA", "1DA", "1DK", "2H4", "2D4"], ["2CA", "2S7", "2S6", "2S5", "2S4", "2S3", "2S2", "2H2", "2H3", "2D5"], ["3MC", "2DA", "2DK", "2DQ", "2D1", "2D9", "2D8", "2D7", "2D6", "4MC"]]
+P1_1 = [[1], [1], [1], [1], [1]]
+P1_2 = [[1, 1, 1, 1, 1]]
+P1_3 = [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [
+    0, 0, 1, 0, 0], [0, 0, 0, 1, 0], [0, 0, 0, 0, 1]]
+P1_4 = [[0, 0, 0, 0, 1], [0, 0, 0, 1, 0], [
+    0, 0, 1, 0, 0], [0, 1, 0, 0, 0], [1, 0, 0, 0, 0]]
+P2_1 = [[2], [2], [2], [2], [2]]
+P2_2 = [[2, 2, 2, 2, 2]]
+P2_3 = [[2, 0, 0, 0, 0], [0, 2, 0, 0, 0], [
+    0, 0, 2, 0, 0], [0, 0, 0, 2, 0], [0, 0, 0, 0, 2]]
+P2_4 = [[0, 0, 0, 0, 2], [0, 0, 0, 2, 0], [
+    0, 0, 2, 0, 0], [0, 2, 0, 0, 0], [2, 0, 0, 0, 0]]
 
 
 class Board:
@@ -40,6 +52,10 @@ class Board:
         self.current_turn = 1
         self.turn_state = 1
         self.card_selected = ""
+        self.p1_win = [P1_1, P1_2, P1_3, P1_4]
+        self.p2_win = [P2_1, P2_2, P2_3, P2_4]
+        self.winner = 0
+        self.win_state = False
 
         # board cards
         col = []
@@ -259,9 +275,41 @@ class Board:
                 len(self.card_deck) + 1), played_card)
             if not dead:
                 self.current_turn = 1
+        self.checkWin()
 
     def playCard(self, card_selected, count):
         for card_y, card_r in enumerate(self.card_matrix):
             for card_x, card_c in enumerate(card_r):
                 if card_c.cType == card_selected and card_c.count == count:
                     self.card_matrix[card_y][card_x].chip = self.current_turn
+
+    def checkWinPatternSearch(self, arr, pattern, x, y):
+        for i in range(len(pattern)):
+            for j in range(len(pattern[0])):
+                if arr[x + i][y + j].chip != pattern[i][j]:
+                    return False
+            if i == len(pattern) - 1:
+                return True
+
+    def checkWinPattern(self, arr, pattern):
+        check = False
+        for x in range(len(arr) - len(pattern) + 1):
+            for y in range(len(arr[0]) - len(pattern[0]) + 1):
+                if not check:
+                    check = self.checkWinPatternSearch(arr, pattern, x, y)
+        return check
+
+    def checkWin(self):
+        board_arr = self.card_matrix
+
+        # check p1 win
+        for p in self.p1_win:
+            if self.checkWinPattern(board_arr, p):
+                self.winner = 1
+                self.win_state = True
+
+        # check p1 win
+        for p in self.p2_win:
+            if self.checkWinPattern(board_arr, p):
+                self.winner = 2
+                self.win_state = True

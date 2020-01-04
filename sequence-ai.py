@@ -17,7 +17,7 @@ WIN_WIDTH = 1000
 WIN_HEIGHT = 900
 
 
-def draw_window(win, board):
+def drawWindow(win, board):
     # board
     board.drawBoard(win)
     board.drawHands(win)
@@ -49,10 +49,10 @@ def main():
                 run = False
                 pygame.quit()
                 quit()
-            if event.type == pygame.KEYDOWN and (event.key == pygame.K_1 or event.key == pygame.K_2 or event.key == pygame.K_3 or event.key == pygame.K_4 or event.key == pygame.K_5):
+            if event.type == pygame.KEYDOWN and not board.win_state:
                 board.handleCardSelect(event.key)
 
-        draw_window(win, board)
+        drawWindow(win, board)
 
 
 main()

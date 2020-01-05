@@ -18,9 +18,14 @@ WIN_HEIGHT = 900
 
 
 def drawWindow(win, board):
+    # backgroud
+    win.fill((0, 0, 0))
+
     # board
     board.drawBoard(win)
     board.drawHands(win)
+    board.drawStats(win)
+    board.drawNNStats(win)
 
     # update
     pygame.display.update()

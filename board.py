@@ -13,6 +13,7 @@ import random
 from card import Card
 
 # inits
+pygame.font.init()
 BOARD_SIZE_X = 10
 BOARD_SIZE_Y = 10
 CARD_WIDTH = round(140 / 2.5)
@@ -36,6 +37,10 @@ P2_3 = [[2, 0, 0, 0, 0], [0, 2, 0, 0, 0], [
     0, 0, 2, 0, 0], [0, 0, 0, 2, 0], [0, 0, 0, 0, 2]]
 P2_4 = [[0, 0, 0, 0, 2], [0, 0, 0, 2, 0], [
     0, 0, 2, 0, 0], [0, 2, 0, 0, 0], [2, 0, 0, 0, 0]]
+STAT_FONT = pygame.font.SysFont("consolas", 20)
+TEXT_LINE_HEIGHT = STAT_FONT.get_height() + 4
+P1_COLOR = (232, 106, 23)
+P2_COLOR = (30, 167, 225)
 
 
 class Board:
@@ -57,6 +62,8 @@ class Board:
         self.winner = 0
         self.win_state = False
         self.isP2Random = False
+        self.p1TurnsPlayed = 0
+        self.p2TurnsPlayed = 0
 
         # board cards
         col = []
@@ -271,6 +278,7 @@ class Board:
             self.p1_cards.append(new_card)
             self.card_deck.insert(random.randrange(
                 len(self.card_deck) + 1), played_card)
+            self.p1TurnsPlayed += 1
             if not dead:
                 self.current_turn = 2
         elif self.current_turn == 2:
@@ -280,6 +288,7 @@ class Board:
             self.p2_cards.append(new_card)
             self.card_deck.insert(random.randrange(
                 len(self.card_deck) + 1), played_card)
+            self.p2TurnsPlayed += 1
             if not dead:
                 self.current_turn = 1
         self.checkWin()
@@ -330,3 +339,36 @@ class Board:
                 card_selected_n = random.choice([1, 2])
 
             self.playTurn(card_selected_n)
+
+    def drawStats(self, win):
+        # Player 1
+        p1t_X = HAND_SPACE
+        p1t_y = CARD_SPACE + (3 * (CARD_HEIGHT + CARD_SPACE))
+        if self.win_state and self.winner == 1:
+            wins = " Wins!"
+        else:
+            wins = ""
+        text1_1 = STAT_FONT.render(
+            "Player 1" + str(wins), 1, P1_COLOR)
+        win.blit(text1_1, (p1t_X, p1t_y))
+        text1_2 = STAT_FONT.render(
+            "Turns Played: " + str(self.p1TurnsPlayed), 1, P1_COLOR)
+        win.blit(text1_2, (p1t_X, p1t_y + (1 * TEXT_LINE_HEIGHT)))
+
+        # Player 2
+        p2t_X = HAND_SPACE
+        p2t_y = CARD_SPACE + (6 * (CARD_HEIGHT + CARD_SPACE))
+        if self.win_state and self.winner == 2:
+            wins = " Wins!"
+        else:
+            wins = ""
+        text2_1 = STAT_FONT.render(
+            "Player 2" + str(wins), 1, P2_COLOR)
+        win.blit(text2_1, (p2t_X, p2t_y))
+        text2_2 = STAT_FONT.render(
+            "Turns Played: " + str(self.p2TurnsPlayed), 1, P2_COLOR)
+        win.blit(text2_2, (p2t_X, p2t_y + (1 * TEXT_LINE_HEIGHT)))
+
+    def drawNNStats(self, win):
+        draw.rect(win, (250, 250, 250), (0, CARD_SPACE +
+                                         (10 * (CARD_HEIGHT + CARD_SPACE)), 1000, 74))

@@ -56,6 +56,7 @@ class Board:
         self.p2_win = [P2_1, P2_2, P2_3, P2_4]
         self.winner = 0
         self.win_state = False
+        self.isP2Random = False
 
         # board cards
         col = []
@@ -188,24 +189,38 @@ class Board:
                 win.blit(self.cb, (win_x, win_y))
 
     def handleCardSelect(self, key):
+        if not self.isP2Random or self.current_turn == 1:
+            if self.turn_state == 1:
+                card_selected_n = 0
+                if key == pygame.K_1:
+                    card_selected_n = 0
+                elif key == pygame.K_2:
+                    card_selected_n = 1
+                elif key == pygame.K_3:
+                    card_selected_n = 2
+                elif key == pygame.K_4:
+                    card_selected_n = 3
+                elif key == pygame.K_5:
+                    card_selected_n = 4
+                else:
+                    return
+
+            if self.turn_state == 2:
+                card_selected_n = 1
+                if key == pygame.K_1:
+                    card_selected_n = 1
+                elif key == pygame.K_2:
+                    card_selected_n = 2
+                else:
+                    return
+
+            self.playTurn(card_selected_n)
+
+    def playTurn(self, card_selected_n):
         # os.write(1, str(key).encode())
 
         # normal turn
         if self.turn_state == 1:
-            card_selected_n = 0
-            if key == pygame.K_1:
-                card_selected_n = 0
-            elif key == pygame.K_2:
-                card_selected_n = 1
-            elif key == pygame.K_3:
-                card_selected_n = 2
-            elif key == pygame.K_4:
-                card_selected_n = 3
-            elif key == pygame.K_5:
-                card_selected_n = 4
-            else:
-                return
-
             # card_selected = self.p1_cards[card_selected_n]
             player_cards = getattr(
                 self, "p" + str(self.current_turn) + "_cards")
@@ -239,15 +254,7 @@ class Board:
 
         # double card turn
         if self.turn_state == 2:
-            opt_selected_n = 1
-            if key == pygame.K_1:
-                opt_selected_n = 1
-            elif key == pygame.K_2:
-                opt_selected_n = 2
-            else:
-                return
-
-            self.playCard(self.card_selected, opt_selected_n)
+            self.playCard(self.card_selected, card_selected_n)
             self.nextTurn(False)
             self.turn_state = 1
             return
@@ -313,3 +320,13 @@ class Board:
             if self.checkWinPattern(board_arr, p):
                 self.winner = 2
                 self.win_state = True
+
+    def p2Random(self):
+        if self.isP2Random and self.current_turn == 2:
+            if self.turn_state == 1:
+                card_selected_n = random.choice([0, 1, 2, 3, 4])
+
+            if self.turn_state == 2:
+                card_selected_n = random.choice([1, 2])
+
+            self.playTurn(card_selected_n)

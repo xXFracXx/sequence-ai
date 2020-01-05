@@ -33,6 +33,8 @@ def main():
 
     board.genDeck()
     board.dealCards()
+    # P2 Random Turn Call
+    board.isP2Random = True
 
     # clock
     clock = pygame.time.Clock()
@@ -51,6 +53,9 @@ def main():
                 quit()
             if event.type == pygame.KEYDOWN and not board.win_state:
                 board.handleCardSelect(event.key)
+
+        # P2 Random Turn Call
+        board.p2Random()
 
         drawWindow(win, board)
 
